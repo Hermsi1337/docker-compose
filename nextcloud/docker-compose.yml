@@ -1,0 +1,66 @@
+version: '3'
+
+volumes:
+  nextcloud-db-data:
+     driver: local-persist
+     driver_opts:
+       mountpoint: ${CONTAINERVOLUME}/var/lib/mysql
+  nextcloud-data:
+     driver: local-persist
+     driver_opts:
+       mountpoint: ${CONTAINERVOLUME}/data
+  nextcloud-config:
+     driver: local-persist
+     driver_opts:
+       mountpoint: ${CONTAINERVOLUME}/config
+  nextcloud-apps:
+     driver: local-persist
+     driver_opts:
+       mountpoint: ${CONTAINERVOLUME}/apps2
+
+services:
+  nextcloud-db:
+    image: mysql
+    volumes:
+      - nextcloud-db-data:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+
+  nextcloud:
+    image: wonderfall/nextcloud
+    environment:
+      - UID=1000
+      - GID=1000
+      - UPLOAD_MAX_SIZE=10G
+      - APC_SHM_SIZE=128M
+      - OPCACHE_MEM_SIZE=128
+      - REDIS_MAX_MEMORY=64mb
+      - CRON_PERIOD=15m
+      - TZ=Europe/Berlin
+      - DB_TYPE=mysql
+      - DB_NAME=${MYSQL_DATABASE}
+      - DB_USER=${MYSQL_USER}
+      - DB_PASSWORD=${MYSQL_PASSWORD}
+      - DB_HOST=nextcloud-db
+      - VIRTUAL_HOST=${VIRTUAL_HOST}
+      - LETSENCRYPT_HOST=${LETSENCRYPT_HOST}
+      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
+    depends_on:
+      - nextcloud-db
+    volumes:
+      - nextcloud-data:/data
+      - nextcloud-config:/config
+      - nextcloud-apps:/apps2
+    networks:
+      - nginxproxy
+      - default
+    ports:
+      - ${CLOUDPORT}:8888
+
+networks:
+  nginxproxy:
+    external:
+      name: ${NGINXPROXYNETWORK}
