@@ -1,0 +1,46 @@
+version: '3'
+
+volumes:
+  rancher-db-data:
+     driver: local-persist
+     driver_opts:
+       mountpoint: ${CONTAINERVOLUME}/var/lib/mysql
+
+services:
+  database:
+    image: mysql
+    restart: on-failure:10
+    volumes:
+      - rancher-db-data:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+
+  application:
+    image: rancher/server
+    restart: on-failure:10
+    environment:
+      - CATTLE_DB_CATTLE_MYSQL_HOST=database
+      - CATTLE_DB_CATTLE_MYSQL_PORT=3306
+      - CATTLE_DB_CATTLE_USERNAME=${MYSQL_USER}
+      - CATTLE_DB_CATTLE_PASSWORD=${MYSQL_PASSWORD}
+      - CATTLE_DB_CATTLE_MYSQL_NAME=${MYSQL_DATABASE}
+      - CATTLE_API_ALLOW_CLIENT_OVERRIDE=true
+      - VIRTUAL_HOST=${VIRTUAL_HOST}
+      - VIRTUAL_PORT=8080
+      - LETSENCRYPT_HOST=${LETSENCRYPT_HOST}
+      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
+    depends_on:
+      - database
+    networks:
+      - nginxproxy
+      - default
+    ports:
+      - ${RANCHERPORT}:8080
+
+networks:
+  nginxproxy:
+    external:
+      name: ${NGINXPROXYNETWORK}
