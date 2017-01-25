@@ -1,0 +1,30 @@
+version: '3'
+
+volumes:
+  openvpn-data:
+     driver: local-persist
+     driver_opts:
+       mountpoint: ${CONTAINERVOLUME}/etc/openvpn
+
+services:
+  application:
+    image: kylemanna/openvpn
+    restart: on-failure:10
+    environment:
+      - VIRTUAL_HOST=${VIRTUAL_HOST}
+      - LETSENCRYPT_HOST=${LETSENCRYPT_HOST}
+      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
+    volumes:
+      - openvpn-data:/etc/openvpn
+    ports:
+      - ${VPNPORT}:1194/udp
+    cap_add:
+      - NET_ADMIN
+    networks:
+      - nginxproxy
+      - default
+
+networks:
+  nginxproxy:
+    external:
+      name: ${NGINXPROXYNETWORK}
