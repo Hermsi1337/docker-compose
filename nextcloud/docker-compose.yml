@@ -19,7 +19,7 @@ volumes:
        mountpoint: ${CONTAINERVOLUME}/apps2
 
 services:
-  nextcloud-db:
+  database:
     image: mysql
     volumes:
       - nextcloud-db-data:/var/lib/mysql
@@ -29,7 +29,7 @@ services:
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
 
-  nextcloud:
+  application:
     image: wonderfall/nextcloud
     environment:
       - UID=1000
@@ -44,12 +44,12 @@ services:
       - DB_NAME=${MYSQL_DATABASE}
       - DB_USER=${MYSQL_USER}
       - DB_PASSWORD=${MYSQL_PASSWORD}
-      - DB_HOST=nextcloud-db
+      - DB_HOST=database
       - VIRTUAL_HOST=${VIRTUAL_HOST}
       - LETSENCRYPT_HOST=${LETSENCRYPT_HOST}
       - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
     depends_on:
-      - nextcloud-db
+      - database
     volumes:
       - nextcloud-data:/data
       - nextcloud-config:/config
