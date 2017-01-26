@@ -1,10 +1,14 @@
 version: '3'
 
 volumes:
+  gitlab-redis-data:
+     driver: local-persist
+     driver_opts:
+       mountpoint: ${CONTAINERVOLUME}/var/lib/redis
   gitlab-db-data:
      driver: local-persist
      driver_opts:
-       mountpoint: ${CONTAINERVOLUME}/var/lib/mysql
+       mountpoint: ${CONTAINERVOLUME}/var/lib/postgresql
   gitlab-data:
      driver: local-persist
      driver_opts:
@@ -19,35 +23,43 @@ volumes:
        mountpoint: ${CONTAINERVOLUME}/logs
 
 services:
-  database:
-    image: mysql
+  redis:
+    image: redis
     restart: unless-stopped
     volumes:
-      - gitlab-db-data:/var/lib/mysql
+      - gitlab-redis-data:/var/lib/redis
+
+  database:
+    image: postgres
+    restart: unless-stopped
+    volumes:
+      - gitlab-db-data:/var/lib/postgresql
     environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - POSTGRES_DB=${MYSQL_DATABASE}
+      - POSTGRES_USER=${MYSQL_USER}
+      - POSTGRES_PASSWORD=${MYSQL_PASSWORD}
 
   application:
     image: gitlab/gitlab-ce
     restart: unless-stopped
     environment:
-      - TZ=Europe/Berlin
-      - GITLAB_DATABASE_ADAPTER=mysql2
-      - GITLAB_DATABASE_DATABASE=${MYSQL_DATABASE}
-      - GITLAB_DATABASE_USERNAME=${MYSQL_USER}
-      - GITLAB_DATABASE_PASSWORD=${MYSQL_PASSWORD}
-      - GITLAB_DATABASE_HOST=database
-      - GITLAB_DATABASE_PORT=3306
-      - GITLAB_ROOT_PASSWORD=${GITLAB_ROOT_PW}
-      - GITLAB_HOST=https://${VIRTUAL_HOST}
-      - VIRTUAL_HOST=${VIRTUAL_HOST}
-      - LETSENCRYPT_HOST=${LETSENCRYPT_HOST}
-      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http://${VIRTUAL_HOST}'
+        gitlab_rails['db_adapter'] = "postgresql"
+        gitlab_rails['db_database'] = "${MYSQL_DATABASE}"
+        gitlab_rails['db_username'] = "${MYSQL_USER}"
+        gitlab_rails['db_password'] = "${MYSQL_PASSWORD}"
+        gitlab_rails['db_host'] = "database"
+        gitlab_rails['redis_host'] = "redis"
+        gitlab_rails['redis_port'] = 6379
+      GITLAB_ROOT_PASSWORD: ${GITLAB_ROOT_PW}
+      VIRTUAL_HOST: ${VIRTUAL_HOST}
+      VIRTUAL_PROTO: HTTP
+      LETSENCRYPT_HOST: ${LETSENCRYPT_HOST}
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
     depends_on:
       - database
+      - redis
     volumes:
       - gitlab-data:/etc/gitlab
       - gitlab-config:/var/log/gitlab
