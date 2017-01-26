@@ -1,0 +1,66 @@
+version: '3'
+
+volumes:
+  gitlab-db-data:
+     driver: local-persist
+     driver_opts:
+       mountpoint: ${CONTAINERVOLUME}/var/lib/mysql
+  gitlab-data:
+     driver: local-persist
+     driver_opts:
+       mountpoint: ${CONTAINERVOLUME}/data
+  gitlab-config:
+     driver: local-persist
+     driver_opts:
+       mountpoint: ${CONTAINERVOLUME}/config
+  gitlab-logs:
+     driver: local-persist
+     driver_opts:
+       mountpoint: ${CONTAINERVOLUME}/logs
+
+services:
+  database:
+    image: mysql
+    restart: unless-stopped
+    volumes:
+      - gitlab-db-data:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+
+  application:
+    image: gitlab/gitlab-ce
+    restart: unless-stopped
+    environment:
+      - TZ=Europe/Berlin
+      - GITLAB_DATABASE_ADAPTER=mysql2
+      - GITLAB_DATABASE_DATABASE=${MYSQL_DATABASE}
+      - GITLAB_DATABASE_USERNAME=${MYSQL_USER}
+      - GITLAB_DATABASE_PASSWORD=${MYSQL_PASSWORD}
+      - GITLAB_DATABASE_HOST=database
+      - GITLAB_DATABASE_PORT=3306
+      - GITLAB_ROOT_PASSWORD=${GITLAB_ROOT_PW}
+      - GITLAB_HOST=https://${VIRTUAL_HOST}
+      - VIRTUAL_HOST=${VIRTUAL_HOST}
+      - LETSENCRYPT_HOST=${LETSENCRYPT_HOST}
+      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
+    depends_on:
+      - database
+    volumes:
+      - gitlab-data:/etc/gitlab
+      - gitlab-config:/var/log/gitlab
+      - gitlab-logs:/var/opt/gitlab
+    networks:
+      - nginxproxy
+      - default
+    ports:
+      - ${PROXYPORTHTTP}:80
+      - ${PROXYPORTHTTPS}:443
+      - ${PROXYPORTSSH}:22
+
+networks:
+  nginxproxy:
+    external:
+      name: ${NGINXPROXYNETWORK}
