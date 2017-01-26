@@ -21,7 +21,6 @@ volumes:
 services:
   database:
     image: mysql
-    restart: on-failure:10
     volumes:
       - nextcloud-db-data:/var/lib/mysql
     environment:
@@ -32,7 +31,6 @@ services:
 
   application:
     image: wonderfall/nextcloud
-    restart: on-failure:10
     environment:
       - UID=1000
       - GID=1000
@@ -60,7 +58,7 @@ services:
       - nginxproxy
       - default
     ports:
-      - ${PROXYPORT}:8888
+      - ${CLOUDPORT}:8888
 
 networks:
   nginxproxy:

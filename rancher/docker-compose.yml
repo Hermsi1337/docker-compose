@@ -38,7 +38,7 @@ services:
       - nginxproxy
       - default
     ports:
-      - ${PROXYPORT}:8080
+      - ${RANCHERPORT}:8080
 
 networks:
   nginxproxy:
