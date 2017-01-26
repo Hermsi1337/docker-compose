@@ -9,7 +9,7 @@ volumes:
 services:
   database:
     image: mysql
-    restart: on-failure:10
+    restart: unless-stopped
     volumes:
       - rancher-db-data:/var/lib/mysql
     environment:
@@ -20,7 +20,7 @@ services:
 
   application:
     image: rancher/server
-    restart: on-failure:10
+    restart: unless-stopped
     environment:
       - CATTLE_DB_CATTLE_MYSQL_HOST=database
       - CATTLE_DB_CATTLE_MYSQL_PORT=3306
@@ -38,7 +38,7 @@ services:
       - nginxproxy
       - default
     ports:
-      - ${RANCHERPORT}:8080
+      - ${PROXYPORT}:8080
 
 networks:
   nginxproxy:

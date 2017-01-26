@@ -9,7 +9,7 @@ volumes:
 services:
   application:
     image: kylemanna/openvpn
-    restart: on-failure:10
+    restart: unless-stopped
     environment:
       - VIRTUAL_HOST=${VIRTUAL_HOST}
       - LETSENCRYPT_HOST=${LETSENCRYPT_HOST}
@@ -17,7 +17,7 @@ services:
     volumes:
       - openvpn-data:/etc/openvpn
     ports:
-      - ${VPNPORT}:1194/udp
+      - ${PROXYPORT}:1194/udp
     cap_add:
       - NET_ADMIN
     networks:
