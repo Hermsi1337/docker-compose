@@ -6,7 +6,6 @@
 *.exe
 *.o
 *.so
-*.env
 
 # Docker Files #
 ################
