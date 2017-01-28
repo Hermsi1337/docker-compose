@@ -1,0 +1,89 @@
+version: '3'
+
+volumes:
+  invoice-db-data:
+     driver: local-persist
+     driver_opts:
+       mountpoint: ${CONTAINERVOLUME}/var/lib/mysql
+  invoice-app-data:
+     driver: local-persist
+     driver_opts:
+       mountpoint: ${CONTAINERVOLUME}/var/www/app
+
+services:
+  database:
+     image: mysql
+     restart: unless-stopped
+     volumes:
+       - invoice-db-data:/var/lib/mysql
+     environment:
+       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+       - MYSQL_DATABASE=${MYSQL_DATABASE}
+       - MYSQL_USER=${MYSQL_USER}
+       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+
+  webserver:
+    image: nginx
+    restart: unless-stopped
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - invoice-app-data:/var/www/app
+    environment:
+      - VIRTUAL_HOST=${VIRTUAL_HOST}
+      - VIRTUAL_PROTO=http
+      - VIRTUAL_PORT=80
+      - LETSENCRYPT_HOST=${LETSENCRYPT_HOST}
+      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
+    ports:
+      - ${PROXYPORT}:80
+    networks:
+      - nginxproxy
+      - default
+
+  application:
+    image: invoiceninja/invoiceninja
+    restart: unless-stopped
+    environment:
+      - APP_DEBUG=1
+      - APP_URL=http://${VIRTUAL_HOST}
+      - DB_HOST=database
+      - DB_DATABASE=${MYSQL_DATABASE}
+      - DB_USERNAME=${MYSQL_USER}
+      - DB_PASSWORD=${MYSQL_PASSWORD}
+    depends_on:
+      - database
+      - webserver
+    volumes:
+      - invoice-app-data:/var/www/app
+    networks:
+      - default
+
+  cron:
+    image: invoiceninja/invoiceninja
+    restart: unless-stopped
+    user: www-data
+    environment:
+      - APP_DEBUG=1
+      - DB_HOST=database
+      - DB_DATABASE=${MYSQL_DATABASE}
+      - DB_USERNAME=${MYSQL_USER}
+      - DB_PASSWORD=${MYSQL_PASSWORD}
+    depends_on:
+      - database
+      - webserver
+      - application
+    entrypoint: |
+      bash -c 'bash -s <<EOF
+      trap "break;exit" SIGHUP SIGINT SIGTERM
+      sleep 300s
+      while /bin/true; do
+        DB_USERNAME=${MYSQL_USER} DB_PASSWORD=${MYSQL_PASSWORD} /usr/local/bin/php /var/www/app/artisan ninja:send-invoices
+        DB_USERNAME=${MYSQL_USER} DB_PASSWORD=${MYSQL_PASSWORD} /usr/local/bin/php /var/www/app/artisan ninja:send-reminders
+        sleep 1d
+      done
+      EOF'
+
+networks:
+  nginxproxy:
+    external:
+      name: ${NGINXPROXYNETWORK}
