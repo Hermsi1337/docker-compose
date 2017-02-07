@@ -12,15 +12,17 @@ volumes:
 
 services:
   database:
-     image: mysql
-     restart: unless-stopped
-     volumes:
-       - invoice-db-data:/var/lib/mysql
-     environment:
-       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-       - MYSQL_DATABASE=${MYSQL_DATABASE}
-       - MYSQL_USER=${MYSQL_USER}
-       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    image: mysql
+    restart: unless-stopped
+    volumes:
+      - invoice-db-data:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    networks:
+      - default
 
   webserver:
     image: nginx
@@ -37,10 +39,10 @@ services:
     ports:
       - ${PROXYPORT}:80
     networks:
-      - nginxproxy
       - default
+      - nginxproxy
 
-  application:
+  app:
     image: invoiceninja/invoiceninja
     restart: unless-stopped
     environment:
@@ -56,7 +58,9 @@ services:
     volumes:
       - invoice-app-data:/var/www/app
     networks:
-      - default
+      default:
+        aliases:
+          - ninja
 
   cron:
     image: invoiceninja/invoiceninja
@@ -71,7 +75,7 @@ services:
     depends_on:
       - database
       - webserver
-      - application
+      - app
     entrypoint: |
       bash -c 'bash -s <<EOF
       trap "break;exit" SIGHUP SIGINT SIGTERM
