@@ -1,0 +1,68 @@
+version: '3'
+
+volumes:
+  wordpress-db-data:
+     driver: local-persist
+     driver_opts:
+       mountpoint: ${CONTAINERVOLUME}/var/lib/mysql
+  wordpress:
+  wp-content:
+     driver: local-persist
+     driver_opts:
+       mountpoint: ${CONTAINERVOLUME}/wp-content
+
+services:
+  database:
+    image: mysql
+    restart: unless-stopped
+    volumes:
+      - wordpress-db-data:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    networks:
+      - default
+
+  webserver:
+    image: nginx
+    restart: unless-stopped
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - wordpress:/var/www/html
+    environment:
+      - VIRTUAL_HOST=${VIRTUAL_HOST}
+      - VIRTUAL_PROTO=http
+      - VIRTUAL_PORT=80
+      - LETSENCRYPT_HOST=${LETSENCRYPT_HOST}
+      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
+    ports:
+      - ${PROXYPORT}:80
+    networks:
+      - default
+      - nginxproxy
+
+  application:
+    image: wordpress:php7.1-fpm-alpine
+    restart: unless-stopped
+    environment:
+      - WORDPRESS_DB_HOST=database
+      - WORDPRESS_DB_NAME=${MYSQL_DATABASE}
+      - WORDPRESS_DB_USER=${MYSQL_USER}
+      - WORDPRESS_DB_PASSWORD=${MYSQL_PASSWORD}
+    depends_on:
+      - database
+      - webserver
+    volumes:
+      - wordpress:/var/www/html
+      - wp-content:/usr/src/wordpress/wp-content
+    networks:
+      default:
+        aliases:
+          - wordpress
+
+networks:
+  nginxproxy:
+    external:
+      name: ${NGINXPROXYNETWORK}
