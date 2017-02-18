@@ -2,25 +2,30 @@ version: '3'
 
 volumes:
   gitlab-redis-data:
-     driver: local-persist
      driver_opts:
-       mountpoint: ${CONTAINERVOLUME}/var/lib/redis
+       type: none
+       device: ${CONTAINERVOLUME}/var/lib/redis
+       o: bind
   gitlab-db-data:
-     driver: local-persist
      driver_opts:
-       mountpoint: ${CONTAINERVOLUME}/var/lib/postgresql
+       type: none
+       device: ${CONTAINERVOLUME}/var/lib/postgresql
+       o: bind
   gitlab-data:
-     driver: local-persist
      driver_opts:
-       mountpoint: ${CONTAINERVOLUME}/data
+       type: none
+       device: ${CONTAINERVOLUME}/data
+       o: bind
   gitlab-config:
-     driver: local-persist
      driver_opts:
-       mountpoint: ${CONTAINERVOLUME}/config
+       type: none
+       device: ${CONTAINERVOLUME}/config
+       o: bind
   gitlab-logs:
-     driver: local-persist
      driver_opts:
-       mountpoint: ${CONTAINERVOLUME}/logs
+       type: none
+       device: ${CONTAINERVOLUME}/logs
+       o: bind
 
 services:
   redis:
@@ -62,6 +67,15 @@ services:
         gitlab_rails['gitlab_email_reply_to'] = "${REPLY_TO_MAIL}"
         gitlab_rails['smtp_authentication'] = "${SMTP_AUTH}"
         gitlab_rails['smtp_enable_starttls_auto'] = "${STARTTLS}"
+        gitlab_rails['omniauth_enabled'] = true
+        gitlab_rails['omniauth_providers'] = [
+          {
+            "name" => "${OAUTH_NAME}",
+            "app_id" => "${APP_ID}",
+            "app_secret" => "${APP_SECRET}",
+            "args" => { "scope" => "user:email" }
+          }
+        ]
       GITLAB_ROOT_PASSWORD: ${GITLAB_ROOT_PW}
       VIRTUAL_HOST: ${VIRTUAL_HOST}
       VIRTUAL_PROTO: HTTP
