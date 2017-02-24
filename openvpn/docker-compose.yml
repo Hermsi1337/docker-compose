@@ -18,14 +18,6 @@ services:
     volumes:
       - openvpn-data:/etc/openvpn
     ports:
-      - ${PROXYPORT}:1194/udp
+      - 1194:1194/udp
     cap_add:
       - NET_ADMIN
-    networks:
-      - nginxproxy
-      - default
-
-networks:
-  nginxproxy:
-    external:
-      name: ${NGINXPROXYNETWORK}
