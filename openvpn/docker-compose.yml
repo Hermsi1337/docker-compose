@@ -11,10 +11,6 @@ services:
   openvpn:
     image: kylemanna/openvpn
     restart: unless-stopped
-    environment:
-      - VIRTUAL_HOST=${VIRTUAL_HOST}
-      - LETSENCRYPT_HOST=${LETSENCRYPT_HOST}
-      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
     volumes:
       - openvpn-data:/etc/openvpn
     ports:
