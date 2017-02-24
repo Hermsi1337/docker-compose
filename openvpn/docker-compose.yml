@@ -2,12 +2,13 @@ version: '3'
 
 volumes:
   openvpn-data:
-     driver: local-persist
      driver_opts:
-       mountpoint: ${CONTAINERVOLUME}/etc/openvpn
+       type: none
+       device: ${CONTAINERVOLUME}/etc/openvpn
+       o: bind
 
 services:
-  application:
+  openvpn:
     image: kylemanna/openvpn
     restart: unless-stopped
     environment:
