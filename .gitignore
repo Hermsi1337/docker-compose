@@ -31,6 +31,7 @@
 *.log
 *.sql
 *.sqlite
+*.ovpn
 
 # OS generated files #
 ######################
