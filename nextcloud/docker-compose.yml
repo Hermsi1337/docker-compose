@@ -1,6 +1,10 @@
 version: '3'
 
 volumes:
+  nextcloud-redis-data:
+     driver: local-persist
+     driver_opts:
+       mountpoint: ${CONTAINERVOLUME}/var/lib/redis
   nextcloud-db-data:
      driver: local-persist
      driver_opts:
@@ -19,6 +23,12 @@ volumes:
        mountpoint: ${CONTAINERVOLUME}/apps2
 
 services:
+  redis:
+    image: redis:alpine
+    restart: unless-stopped
+    volumes:
+      - nextcloud-redis-data:/data
+
   database:
     image: mysql
     restart: unless-stopped
@@ -52,6 +62,7 @@ services:
       - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
     depends_on:
       - database
+      - redis
     volumes:
       - nextcloud-data:/data
       - nextcloud-config:/config
