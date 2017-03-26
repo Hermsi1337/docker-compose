@@ -2,8 +2,7 @@ version: '2'
 
 services:
   nginx-proxy:
-    restart: unless-stopped
-    image: jwilder/nginx-proxy
+    image: jwilder/nginx-proxy:alpine
     container_name: nginx-proxy
     ports:
       - 80:80
@@ -20,7 +19,6 @@ services:
   nginx-proxy-companion:
     depends_on:
       - nginx-proxy
-    restart: unless-stopped
     image: jrcs/letsencrypt-nginx-proxy-companion
     container_name: nginx-proxy-companion
     volumes_from:
