@@ -5,15 +5,18 @@ volumes:
      driver: local-persist
      driver_opts:
        mountpoint: ${CONTAINERVOLUME}/var/lib/mysql
-  invoice-app-data:
+  invoice-app-public:
      driver: local-persist
      driver_opts:
-       mountpoint: ${CONTAINERVOLUME}/var/www/app
+       mountpoint: ${CONTAINERVOLUME}/var/www/app/public
+  invoice-app-storage:
+     driver: local-persist
+     driver_opts:
+       mountpoint: ${CONTAINERVOLUME}/var/www/app/storage
 
 services:
   database:
     image: mysql
-    restart: unless-stopped
     volumes:
       - invoice-db-data:/var/lib/mysql
     environment:
@@ -26,16 +29,18 @@ services:
 
   webserver:
     image: nginx
-    restart: unless-stopped
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - invoice-app-data:/var/www/app
+      - invoice-app-public:/var/www/app/public
     environment:
       - VIRTUAL_HOST=${VIRTUAL_HOST}
       - VIRTUAL_PROTO=http
       - VIRTUAL_PORT=80
       - LETSENCRYPT_HOST=${LETSENCRYPT_HOST}
       - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
+    depends_on:
+      - database
+      - app
     ports:
       - ${PROXYPORT}:80
     networks:
@@ -44,7 +49,6 @@ services:
 
   app:
     image: invoiceninja/invoiceninja
-    restart: unless-stopped
     environment:
       - APP_DEBUG=1
       - APP_URL=http://${VIRTUAL_HOST}
@@ -54,9 +58,9 @@ services:
       - DB_PASSWORD=${MYSQL_PASSWORD}
     depends_on:
       - database
-      - webserver
     volumes:
-      - invoice-app-data:/var/www/app
+      - invoice-app-storage:/var/www/app/storage
+      - invoice-app-public:/var/www/app/public
     networks:
       default:
         aliases:
