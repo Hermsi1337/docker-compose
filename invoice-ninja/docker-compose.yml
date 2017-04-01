@@ -13,8 +13,19 @@ volumes:
      driver: local-persist
      driver_opts:
        mountpoint: ${CONTAINERVOLUME}/var/www/app/storage
+  invoice-redis-data:
+     driver: local-persist
+     driver_opts:
+       mountpoint: ${CONTAINERVOLUME}/var/lib/redis
 
 services:
+  redis:
+    image: redis:alpine
+    volumes:
+      - invoice-redis-data:/var/lib/redis
+    networks:
+      - default
+
   database:
     image: mysql
     volumes:
@@ -50,14 +61,27 @@ services:
   app:
     image: invoiceninja/invoiceninja
     environment:
-      - APP_DEBUG=1
-      - APP_URL=http://${VIRTUAL_HOST}
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - REQUIRE_HTTPS=true
+      - APP_URL=https://${VIRTUAL_HOST}
       - DB_HOST=database
       - DB_DATABASE=${MYSQL_DATABASE}
       - DB_USERNAME=${MYSQL_USER}
       - DB_PASSWORD=${MYSQL_PASSWORD}
+      - MAIL_DRIVER=smtp
+      - MAIL_PORT=${MAIL_PORT}
+      - MAIL_ENCRYPTION=${MAIL_ENCRYPTION}
+      - MAIL_HOST=${MAIL_HOST}
+      - MAIL_USERNAME=${MAIL_USERNAME}
+      - MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS}
+      - MAIL_FROM_NAME=${MAIL_FROM_NAME}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
+      - CACHE_DRIVER=redis
+      - REDIS_HOST=redis
     depends_on:
       - database
+      - redis
     volumes:
       - invoice-app-storage:/var/www/app/storage
       - invoice-app-public:/var/www/app/public
@@ -71,7 +95,7 @@ services:
     restart: unless-stopped
     user: www-data
     environment:
-      - APP_DEBUG=1
+      - APP_DEBUG=false
       - DB_HOST=database
       - DB_DATABASE=${MYSQL_DATABASE}
       - DB_USERNAME=${MYSQL_USER}
