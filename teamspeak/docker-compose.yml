@@ -1,0 +1,41 @@
+version: '3'
+
+volumes:
+  teamspeak-data:
+     driver_opts:
+       type: none
+       device: ${CONTAINERVOLUME}/teamspeak
+       o: bind
+  teamspeak-db-data:
+     driver_opts:
+       type: none
+       device: ${CONTAINERVOLUME}/var/lib/mysql
+       o: bind
+
+services:
+  database:
+    image: mariadb
+    volumes:
+      - teamspeak-db-data:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+
+  application:
+    image: hermsi/teamspeak
+    depends_on:
+      - database
+    environment:
+      - TS3_MARIADB_DB=${MYSQL_DATABASE}
+      - TS3_MARIADB_USER=${MYSQL_USER}
+      - TS3_MARIADB_PASS=${MYSQL_PASSWORD}
+      - TS3_MARIADB_HOST=database
+      - TS3_MARIADB_PORT=3306
+    volumes:
+      - teamspeak-data:/data
+    ports:
+      - 9987:9987/udp 
+      - 30033:30033 
+      - 10011:10011 
