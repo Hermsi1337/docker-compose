@@ -2,17 +2,16 @@ version: '3'
 
 volumes:
   teamspeak-data:
+     driver: local-persist
      driver_opts:
-       type: none
-       device: ${CONTAINERVOLUME}/teamspeak
-       o: bind
+       mountpoint: ${CONTAINERVOLUME}/data/teamspeak
   teamspeak-db-data:
+     driver: local-persist
      driver_opts:
-       type: none
-       device: ${CONTAINERVOLUME}/var/lib/mysql
-       o: bind
+       mountpoint: ${CONTAINERVOLUME}/var/lib/mysql
 
 services:
+
   database:
     image: mariadb
     volumes:
