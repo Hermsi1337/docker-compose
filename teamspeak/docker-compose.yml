@@ -33,7 +33,7 @@ services:
       - TS3_MARIADB_HOST=database
       - TS3_MARIADB_PORT=3306
     volumes:
-      - teamspeak-data:/data
+      - teamspeak-data:/teamspeak
     ports:
       - 9987:9987/udp 
       - 30033:30033 
