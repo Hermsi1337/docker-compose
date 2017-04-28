@@ -1,0 +1,65 @@
+version: '3'
+
+volumes:
+  www-data:
+     driver: local-persist
+     driver_opts:
+       mountpoint: ${CONTAINERVOLUME}/html
+  mysql-data:
+     driver: local-persist
+     driver_opts:
+       mountpoint: ${CONTAINERVOLUME}/mysql
+
+services:
+
+  sshd:
+    image: hermsi/alpine-sshd
+    volumes:
+      - www-data:/var/www/html
+    environment:
+      - ROOT_PASSWORD=${ROOT_PASSWORD}
+    ports:
+      - "${SSHPORT}:22"
+    networks:
+      - default
+
+  nginx:
+    image: nginx
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - www-data:/var/www/html
+    environment:
+      - VIRTUAL_HOST=${VIRTUAL_HOST}
+      - LETSENCRYPT_HOST=${LETSENCRYPT_HOST}
+      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
+    ports:
+      - "${PROXYPORT}:80"
+    networks:
+      - default
+      - nginxproxy
+
+  php:
+    image: php:fpm
+    volumes:
+      - www-data:/var/www/html
+    networks:
+      default:
+        aliases:
+          - fpm
+
+  mysql:
+    image: mysql
+    volumes:
+      - mysql-data:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    networks:
+      - default
+
+networks:
+  nginxproxy:
+    external:
+      name: ${NGINXPROXYNETWORK}
