@@ -30,13 +30,11 @@ volumes:
 services:
   redis:
     image: redis
-    restart: unless-stopped
     volumes:
       - gitlab-redis-data:/var/lib/redis
 
   database:
     image: postgres
-    restart: unless-stopped
     volumes:
       - gitlab-db-data:/var/lib/postgresql
     environment:
@@ -46,7 +44,6 @@ services:
 
   application:
     image: gitlab/gitlab-ce
-    restart: unless-stopped
     environment:
       GITLAB_OMNIBUS_CONFIG: |
         external_url 'http://${VIRTUAL_HOST}'

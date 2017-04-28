@@ -10,7 +10,6 @@ volumes:
 services:
   openvpn:
     image: kylemanna/openvpn
-    restart: unless-stopped
     volumes:
       - openvpn-data:/etc/openvpn
     ports:
