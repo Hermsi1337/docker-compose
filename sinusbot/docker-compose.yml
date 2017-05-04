@@ -1,0 +1,32 @@
+version: '3'
+
+volumes:
+  sinusbot-data:
+     driver: local-persist
+     driver_opts:
+       mountpoint: ${CONTAINERVOLUME}/data
+  sinusbot-scripts:
+     driver: local-persist
+     driver_opts:
+       mountpoint: ${CONTAINERVOLUME}/scripts
+
+services:
+  sinusbot:
+    image: hermsi/sinusbot
+    volumes:
+      - sinusbot-data:/ts3soundboard/data
+      - sinusbot-scripts:/ts3soundboard/scripts
+    environment:
+      - VIRTUAL_HOST=${VIRTUAL_HOST}
+      - VIRTUAL_PORT=8087
+      - VIRTUAL_PROTO=http
+      - LETSENCRYPT_HOST=${LETSENCRYPT_HOST}
+      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL} 
+    networks:
+      - nginxproxy
+      - default
+
+networks:
+  nginxproxy:
+    external:
+      name: ${NGINXPROXYNETWORK}

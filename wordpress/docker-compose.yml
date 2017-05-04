@@ -37,8 +37,6 @@ services:
       - VIRTUAL_PORT=80
       - LETSENCRYPT_HOST=${LETSENCRYPT_HOST}
       - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
-    ports:
-      - ${PROXYPORT}:80
     networks:
       - default
       - nginxproxy

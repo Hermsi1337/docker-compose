@@ -52,8 +52,6 @@ services:
     depends_on:
       - database
       - app
-    ports:
-      - ${PROXYPORT}:80
     networks:
       - default
       - nginxproxy

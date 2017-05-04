@@ -67,6 +67,7 @@ services:
       GITLAB_ROOT_PASSWORD: ${GITLAB_ROOT_PW}
       VIRTUAL_HOST: ${VIRTUAL_HOST}
       VIRTUAL_PROTO: HTTP
+      VIRTUAL_PORT: 80
       LETSENCRYPT_HOST: ${LETSENCRYPT_HOST}
       LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
     depends_on:
@@ -80,8 +81,6 @@ services:
       - nginxproxy
       - default
     ports:
-      - ${PROXYPORTHTTP}:80
-      - ${PROXYPORTHTTPS}:443
       - ${PROXYPORTSSH}:22
 
 networks:
