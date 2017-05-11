@@ -2,34 +2,29 @@ version: '3'
 
 volumes:
   gitlab-redis-data:
+     driver: local-persist
      driver_opts:
-       type: none
-       device: ${CONTAINERVOLUME}/var/lib/redis
-       o: bind
+       mountpoint: ${CONTAINERVOLUME}/var/lib/redis
   gitlab-db-data:
+     driver: local-persist
      driver_opts:
-       type: none
-       device: ${CONTAINERVOLUME}/var/lib/postgresql
-       o: bind
+       mountpoint: ${CONTAINERVOLUME}/var/lib/postgresql
   gitlab-data:
+     driver: local-persist
      driver_opts:
-       type: none
-       device: ${CONTAINERVOLUME}/data
-       o: bind
+       mountpoint: ${CONTAINERVOLUME}/data
   gitlab-config:
+     driver: local-persist
      driver_opts:
-       type: none
-       device: ${CONTAINERVOLUME}/config
-       o: bind
+       mountpoint: ${CONTAINERVOLUME}/config
   gitlab-logs:
+     driver: local-persist
      driver_opts:
-       type: none
-       device: ${CONTAINERVOLUME}/logs
-       o: bind
+       mountpoint: ${CONTAINERVOLUME}/logs
 
 services:
   redis:
-    image: redis
+      image: redis:alpine
     volumes:
       - gitlab-redis-data:/var/lib/redis
 
