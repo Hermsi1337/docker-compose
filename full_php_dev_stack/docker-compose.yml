@@ -39,7 +39,7 @@ services:
       - nginxproxy
 
   php:
-    image: php:fpm-alpine
+    image: hermsi/alpine-fpm-php
     volumes:
       - www-data:/var/www/html
     networks:
