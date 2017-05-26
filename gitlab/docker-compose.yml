@@ -1,54 +1,26 @@
 version: '3'
 
 volumes:
-  gitlab-redis-data:
-     driver: local-persist
-     driver_opts:
-       mountpoint: ${CONTAINERVOLUME}/var/lib/redis
-  gitlab-db-data:
-     driver: local-persist
-     driver_opts:
-       mountpoint: ${CONTAINERVOLUME}/var/lib/postgresql
   gitlab-data:
      driver: local-persist
      driver_opts:
-       mountpoint: ${CONTAINERVOLUME}/data
+       mountpoint: ${CONTAINERVOLUME}/var/opt/gitlab
   gitlab-config:
      driver: local-persist
      driver_opts:
-       mountpoint: ${CONTAINERVOLUME}/config
+       mountpoint: ${CONTAINERVOLUME}/etc/gitlab
   gitlab-logs:
      driver: local-persist
      driver_opts:
-       mountpoint: ${CONTAINERVOLUME}/logs
+       mountpoint: ${CONTAINERVOLUME}/var/log/gitlab
 
 services:
-  redis:
-      image: redis:alpine
-    volumes:
-      - gitlab-redis-data:/var/lib/redis
-
-  database:
-    image: postgres
-    volumes:
-      - gitlab-db-data:/var/lib/postgresql
-    environment:
-      - POSTGRES_DB=${MYSQL_DATABASE}
-      - POSTGRES_USER=${MYSQL_USER}
-      - POSTGRES_PASSWORD=${MYSQL_PASSWORD}
 
   application:
     image: gitlab/gitlab-ce
     environment:
       GITLAB_OMNIBUS_CONFIG: |
         external_url 'http://${VIRTUAL_HOST}'
-        gitlab_rails['db_adapter'] = "postgresql"
-        gitlab_rails['db_database'] = "${MYSQL_DATABASE}"
-        gitlab_rails['db_username'] = "${MYSQL_USER}"
-        gitlab_rails['db_password'] = "${MYSQL_PASSWORD}"
-        gitlab_rails['db_host'] = "database"
-        gitlab_rails['redis_host'] = "redis"
-        gitlab_rails['redis_port'] = 6379
         gitlab_rails['smtp_enable'] = true
         gitlab_rails['smtp_address'] = "${SMTP_SERVER}"
         gitlab_rails['smtp_port'] = ${SMTP_PORT}
@@ -65,16 +37,12 @@ services:
       VIRTUAL_PORT: 80
       LETSENCRYPT_HOST: ${LETSENCRYPT_HOST}
       LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
-    depends_on:
-      - database
-      - redis
     volumes:
       - gitlab-data:/etc/gitlab
       - gitlab-config:/var/log/gitlab
       - gitlab-logs:/var/opt/gitlab
     networks:
       - nginxproxy
-      - default
     ports:
       - ${PROXYPORTSSH}:22
 
