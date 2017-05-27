@@ -2,9 +2,10 @@ version: '3'
 
 volumes:
   rainloop-root:
+  rainloop-data:
      driver: local-persist
      driver_opts:
-       mountpoint: ${CONTAINERVOLUME}/rainloop
+       mountpoint: ${CONTAINERVOLUME}/rainloop/data
 
 services:
   webserver:
@@ -28,6 +29,7 @@ services:
     image: hermsi/alpine-rainloop
     volumes:
       - rainloop-root:/rainloop
+      - rainloop-data:/rainloop/data
     networks:
       default:
         aliases:
