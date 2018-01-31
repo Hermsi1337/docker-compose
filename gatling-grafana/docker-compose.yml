@@ -1,0 +1,61 @@
+version: '3'
+
+volumes:
+  gatling-user-files:
+     driver: local-persist
+     driver_opts:
+       mountpoint: ${CONTAINERVOLUME}/opt/gatling/user-files
+  gatling-conf:
+     driver: local-persist
+     driver_opts:
+       mountpoint: ${CONTAINERVOLUME}/opt/gatling/conf
+  gatling-results:
+     driver: local-persist
+     driver_opts:
+       mountpoint: ${CONTAINERVOLUME}/opt/gatling/results
+  influxdb-data:
+     driver: local-persist
+     driver_opts:
+       mountpoint: ${CONTAINERVOLUME}/var/lib/influxdb
+
+services:
+  gatling:
+    image: denvazh/gatling
+    command: [-s, sample.SampleService]
+    volumes:
+      - ./conf.d/gatling.conf:/opt/gatling/conf/gatling.conf:ro
+      - ./conf.d/SampleService.scala:/opt/gatling/user-files/simulations/SampleService.scala:ro
+      - gatling-conf:/opt/gatling/conf
+      - gatling-user-files:/opt/gatling/user-files
+      - gatling-results:/opt/gatling/results
+    depends_on:
+      - influxdb
+      - grafana
+
+  influxdb:
+    image: influxdb:alpine
+    environment:
+      - INFLUXDB_GRAPHITE_ENABLED=true
+    volumes:
+      - ./conf.d/influxdb.conf:/etc/influxdb/influxdb.conf:ro
+      - influxdb-data:/var/lib/influxdb
+
+  grafana:
+    image: grafana/grafana
+    environment:
+      - VIRTUAL_PORT=3000
+      - VIRTUAL_HOST=${VIRTUAL_HOST}
+      - LETSENCRYPT_HOST=${VIRTUAL_HOST}
+      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
+    volumes:
+        - ./conf.d/grafana.db:/var/lib/grafana/grafana.db
+    depends_on:
+      - influxdb
+    networks:
+      - nginxproxy
+      - default
+
+networks:
+  nginxproxy:
+    external:
+      name: ${NGINXPROXYNETWORK}
