@@ -21,7 +21,7 @@ services:
   nginx-proxy-companion:
     depends_on:
       - nginx-proxy
-    image: jrcs/letsencrypt-nginx-proxy-companion
+    image: jrcs/letsencrypt-nginx-proxy-companion:stable
     container_name: nginx-proxy-companion
     volumes_from:
       - nginx-proxy
