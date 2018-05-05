@@ -29,7 +29,7 @@ services:
       - nextcloud-redis-data:/data
 
   database:
-    image: mysql:5.7
+    image: mysql:latest
     volumes:
       - nextcloud-db-data:/var/lib/mysql
     environment:
@@ -37,6 +37,7 @@ services:
       - MYSQL_DATABASE=${MYSQL_DATABASE}
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    command: --default-authentication-plugin=mysql_native_password
 
   application:
     image: wonderfall/nextcloud
