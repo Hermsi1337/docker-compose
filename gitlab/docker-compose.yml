@@ -16,21 +16,27 @@ volumes:
 
 services:
 
-  application:
-    image: gitlab/gitlab-ce
+  gitlab:
+    image: gitlab/gitlab-ce:latest
     environment:
       GITLAB_OMNIBUS_CONFIG: |
-        external_url 'http://${VIRTUAL_HOST}'
+        external_url 'https://${GITLAB_URL}'
+        registry_external_url 'https://${GITLAB_REGISTRY}'
+        registry_nginx['listen_port'] = 80
+        registry_nginx['listen_https'] = false
+        registry_nginx['proxy_set_headers'] = { "X-Forwarded-Proto" => "https", "X-Forwarded-Ssl" => "on" }
+        nginx['listen_port'] = 80
+        nginx['listen_https'] = false
+        nginx['proxy_set_headers'] = { "X-Forwarded-Proto" => "https", "X-Forwarded-Ssl" => "on" }
         gitlab_rails['smtp_enable'] = true
         gitlab_rails['smtp_address'] = "${SMTP_SERVER}"
         gitlab_rails['smtp_port'] = ${SMTP_PORT}
-        gitlab_rails['smtp_user_name'] = "${SMTP_USER}"
-        gitlab_rails['smtp_password'] = "${SMTP_PASSWORD}"
         gitlab_rails['smtp_domain'] = "${SMTP_DOMAIN}"
         gitlab_rails['gitlab_email_from'] = "${FROM_MAIL}"
         gitlab_rails['gitlab_email_reply_to'] = "${REPLY_TO_MAIL}"
         gitlab_rails['smtp_authentication'] = "${SMTP_AUTH}"
         gitlab_rails['smtp_enable_starttls_auto'] = "${STARTTLS}"
+        gitlab_rails['gitlab_shell_ssh_port'] = 2017
       GITLAB_ROOT_PASSWORD: ${GITLAB_ROOT_PW}
       VIRTUAL_HOST: ${VIRTUAL_HOST}
       VIRTUAL_PROTO: HTTP
@@ -44,7 +50,7 @@ services:
     networks:
       - nginxproxy
     ports:
-      - ${PROXYPORTSSH}:22
+      - ${PROXYPORTSSH}:2017
 
 networks:
   nginxproxy:
