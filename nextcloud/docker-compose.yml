@@ -12,15 +12,15 @@ volumes:
   nextcloud-data:
      driver: local-persist
      driver_opts:
-       mountpoint: ${CONTAINERVOLUME}/data
+       mountpoint: ${CONTAINERVOLUME}/var/www/html/data
   nextcloud-config:
      driver: local-persist
      driver_opts:
-       mountpoint: ${CONTAINERVOLUME}/config
+       mountpoint: ${CONTAINERVOLUME}/var/www/html/config
   nextcloud-apps:
      driver: local-persist
      driver_opts:
-       mountpoint: ${CONTAINERVOLUME}/apps2
+       mountpoint: ${CONTAINERVOLUME}/var/www/html/cusom_apps
 
 services:
   redis:
@@ -40,7 +40,7 @@ services:
     command: --default-authentication-plugin=mysql_native_password
 
   application:
-    image: wonderfall/nextcloud
+    image: nextcloud:stable
     environment:
       - UID=1000
       - GID=1000
@@ -56,16 +56,16 @@ services:
       - DB_PASSWORD=${MYSQL_PASSWORD}
       - DB_HOST=database
       - VIRTUAL_HOST=${VIRTUAL_HOST}
-      - VIRTUAL_PORT=8888
+      - VIRTUAL_PROTO=http
       - LETSENCRYPT_HOST=${LETSENCRYPT_HOST}
       - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
     depends_on:
       - database
       - redis
     volumes:
-      - nextcloud-data:/data
-      - nextcloud-config:/config
-      - nextcloud-apps:/apps2
+      - nextcloud-data:/var/www/html/data
+      - nextcloud-config:/var/www/html/config
+      - nextcloud-apps:/var/www/html/custom_apps
     networks:
       - nginxproxy
       - default
