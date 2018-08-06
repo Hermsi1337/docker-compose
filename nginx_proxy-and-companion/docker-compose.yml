@@ -4,6 +4,8 @@ services:
   nginx-proxy:
     image: jwilder/nginx-proxy:alpine
     container_name: nginx-proxy
+    environment:
+      - ENABLE_IPV6=${ENABLE_IPV6}
     ports:
       - 80:80
       - 443:443
