@@ -11,7 +11,6 @@ services:
       - database_volume:/var/lib/mysql
     expose:
       - 3306
-    command: --default-authentication-plugin=mysql_native_password
 
   passbolt:
     image: passbolt/passbolt:2.1.0-debian
