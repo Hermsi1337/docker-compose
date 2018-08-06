@@ -1,7 +1,7 @@
 version: '3.4'
 services:
   database:
-    image: mysql:latest
+    image: percona:5.7
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
