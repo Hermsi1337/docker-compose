@@ -47,6 +47,7 @@ services:
       - images_volume:/var/www/passbolt/webroot/img/public
       - ./scripts/wait-for.sh:/usr/bin/wait-for.sh
       - ./conf.d/redis-session.ini:/usr/local/etc/php/conf.d/redis-session.ini
+      - ./conf.d/app.default.php:/var/www/passbolt/config/app.php
     tmpfs:
       - /run
     command: ["/usr/bin/wait-for.sh", "database:3306", "--", "/docker-entrypoint.sh"]
