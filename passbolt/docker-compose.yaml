@@ -1,3 +1,4 @@
+
 version: '3.4'
 services:
   database:
@@ -11,6 +12,11 @@ services:
       - database_volume:/var/lib/mysql
     expose:
       - 3306
+
+  redis:
+    image: redis:alpine
+    expose:
+      - 6379
 
   passbolt:
     image: passbolt/passbolt:2.1.0-debian
@@ -41,6 +47,7 @@ services:
       - gpg_volume:/var/www/passbolt/config/gpg
       - images_volume:/var/www/passbolt/webroot/img/public
       - ./scripts/wait-for.sh:/usr/bin/wait-for.sh
+      - ./conf.d/redis-session.ini:/usr/local/etc/php/conf.d/redis-session.ini
     tmpfs:
       - /run
     command: ["/usr/bin/wait-for.sh", "database:3306", "--", "/docker-entrypoint.sh"]
