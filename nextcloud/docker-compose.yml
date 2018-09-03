@@ -40,7 +40,7 @@ services:
     command: --default-authentication-plugin=mysql_native_password
 
   application:
-    image: nextcloud:stable
+    image: nextcloud:stable-apache
     environment:
       - UID=1000
       - GID=1000
@@ -70,6 +70,27 @@ services:
     networks:
       - nginxproxy
       - default
+
+  application_cron:
+    image: hermsi/alpine-fpm-php:7.2
+    depends_on:
+      - database
+      - redis
+      - application
+    volumes:
+      - nextcloud-data:/var/www/html/data
+      - nextcloud-config:/var/www/html/config
+      - nextcloud-apps:/var/www/html/custom_apps
+      - ./conf.d/redis-session.ini:/usr/local/etc/php/conf.d/redis-session.ini
+    entrypoint: |
+      ash -c 'ash -s <<EOF
+      trap "break;exit" SIGHUP SIGINT SIGTERM
+      sleep 300s
+      while /bin/true; do
+        php-fpm -f /var/www/html/cron.php
+        sleep 5m
+      done
+      EOF'
 
 networks:
   nginxproxy:
