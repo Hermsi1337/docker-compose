@@ -20,7 +20,7 @@ volumes:
   nextcloud-apps:
      driver: local-persist
      driver_opts:
-       mountpoint: ${CONTAINERVOLUME}/var/www/html/cusom_apps
+       mountpoint: ${CONTAINERVOLUME}/var/www/html/custom_apps
 
 services:
   redis:
