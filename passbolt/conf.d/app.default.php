@@ -97,6 +97,7 @@ return [
          * If you set 'className' => 'Null' core cache will be disabled.
          */
         '_cake_core_' => [
+<<<<<<< HEAD
             'className' => env('CACHE_ENGINE', 'File'),
             'host' => env('CACHE_ENGINE_HOST', null),
             'port' => env('CACHE_ENGINE_PORT', null),
@@ -117,6 +118,7 @@ return [
          * Duration will be set to '+2 minutes' in bootstrap.php when debug = true
          */
         '_cake_model_' => [
+<<<<<<< HEAD
             'className' => env('CACHE_ENGINE', 'File'),
             'host' => env('CACHE_ENGINE_HOST', null),
             'port' => env('CACHE_ENGINE_PORT', null),
@@ -359,4 +361,7 @@ return [
         'defaults' => env('SESSION_DEFAULTS', 'php'),
     ],
 ];
+<<<<<<< HEAD
 
+=======
+>>>>>>> c9d3baffddd0409fbfeff93f33f3e9a004416834
