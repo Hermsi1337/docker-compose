@@ -42,11 +42,16 @@ services:
       - EMAIL_DEFAULT_FROM=${EMAIL_DEFAULT_FROM}
       - EMAIL_TRANSPORT_DEFAULT_USERNAME=${EMAIL_TRANSPORT_DEFAULT_USERNAME}
       - EMAIL_TRANSPORT_DEFAULT_PASSWORD=${EMAIL_TRANSPORT_DEFAULT_PASSWORD}
+      - CACHE_ENGINE=Redis
+      - CACHE_ENGINE_HOST=redis
+      - CACHE_ENGINE_DATABASE_CORE=1
+      - CACHE_ENGINE_DATABASE_MODEL=2
     volumes:
       - gpg_volume:/var/www/passbolt/config/gpg
       - images_volume:/var/www/passbolt/webroot/img/public
       - ./scripts/wait-for.sh:/usr/bin/wait-for.sh
       - ./conf.d/redis-session.ini:/usr/local/etc/php/conf.d/redis-session.ini
+      - ./conf.d/app.default.php:/var/www/passbolt/config/app.php
     tmpfs:
       - /run
     command: ["/usr/bin/wait-for.sh", "database:3306", "--", "/docker-entrypoint.sh"]
