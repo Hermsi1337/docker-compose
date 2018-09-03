@@ -66,6 +66,7 @@ services:
       - nextcloud-data:/var/www/html/data
       - nextcloud-config:/var/www/html/config
       - nextcloud-apps:/var/www/html/custom_apps
+      - ./conf.d/redis-session.ini:/usr/local/etc/php/conf.d/redis-session.ini
     networks:
       - nginxproxy
       - default
