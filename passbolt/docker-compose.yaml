@@ -14,8 +14,8 @@ services:
 
   redis:
     image: redis:alpine
-    expose:
-      - 6379
+    volumes:
+      - redis_volume:/data
 
   passbolt:
     image: passbolt/passbolt:latest
@@ -49,15 +49,21 @@ services:
     volumes:
       - gpg_volume:/var/www/passbolt/config/gpg
       - images_volume:/var/www/passbolt/webroot/img/public
-      - ./scripts/wait-for.sh:/usr/bin/wait-for.sh
       - ./conf.d/redis-session.ini:/usr/local/etc/php/conf.d/redis-session.ini
       - ./conf.d/app.default.php:/var/www/passbolt/config/app.php
     tmpfs:
       - /run
-    command: ["/usr/bin/wait-for.sh", "database:3306", "--", "/docker-entrypoint.sh"]
     networks:
       - nginxproxy
       - default
+    entrypoint: |
+      bash -c "bash -s <<EOF
+      until mysqladmin ping -h \"$$DATASOURCES_DEFAULT_HOST\" -p\"$$DATASOURCES_DEFAULT_PASSWORD\" -u \"$$DATASOURCES_DEFAULT_USERNAME\"; do
+        echo \"SQL-Connection not ready yet...\"
+        sleep 5s
+      done
+      exec /docker-entrypoint.sh
+      EOF"
 
 networks:
   nginxproxy:
@@ -77,3 +83,7 @@ volumes:
      driver: local-persist
      driver_opts:
        mountpoint: ${CONTAINERVOLUME}/var/lib/mysql
+  redis_volume:
+     driver: local-persist
+     driver_opts:
+       mountpoint: ${CONTAINERVOLUME}/var/lib/redis
