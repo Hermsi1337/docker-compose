@@ -62,7 +62,7 @@ services:
         echo \"SQL-Connection not ready yet...\"
         sleep 10s
       done
-      sleep 5
+      sleep 5s
       exec /docker-entrypoint.sh
       EOF"
 
