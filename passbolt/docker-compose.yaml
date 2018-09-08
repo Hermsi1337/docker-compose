@@ -60,8 +60,9 @@ services:
       bash -c "bash -s <<EOF
       until mysqladmin ping -h \"$$DATASOURCES_DEFAULT_HOST\" -p\"$$DATASOURCES_DEFAULT_PASSWORD\" -u \"$$DATASOURCES_DEFAULT_USERNAME\"; do
         echo \"SQL-Connection not ready yet...\"
-        sleep 5s
+        sleep 10s
       done
+      sleep 5
       exec /docker-entrypoint.sh
       EOF"
 
