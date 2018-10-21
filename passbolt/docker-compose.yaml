@@ -50,7 +50,6 @@ services:
       - gpg_volume:/var/www/passbolt/config/gpg
       - images_volume:/var/www/passbolt/webroot/img/public
       - ./conf.d/redis-session.ini:/usr/local/etc/php/conf.d/redis-session.ini
-      - ./conf.d/app.default.php:/var/www/passbolt/config/app.php
     tmpfs:
       - /run
     networks:
