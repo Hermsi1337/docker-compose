@@ -25,11 +25,13 @@ volumes:
 services:
   redis:
     image: redis:alpine
+    restart: unless-stopped
     volumes:
       - nextcloud-redis-data:/data
 
   database:
     image: mysql:latest
+    restart: unless-stopped
     volumes:
       - nextcloud-db-data:/var/lib/mysql
     environment:
@@ -41,6 +43,7 @@ services:
 
   application:
     image: nextcloud:stable-apache
+    restart: unless-stopped
     environment:
       - UID=1000
       - GID=1000
