@@ -1,0 +1,33 @@
+version: '3'
+
+volumes:
+  ark-data:
+    driver: local-persist
+    driver_opts:
+      mountpoint: ${CONTAINERVOLUME}/server
+
+services:
+  server:
+    restart: always
+    container_name: ${COMPOSE_PROJECT_NAME}_server
+    image: hermsi/ark-server:latest
+    volumes:
+      - ark-data:/app
+    environment:
+      - SESSION_NAME=${SESSION_NAME}
+      - SERVER_MAP=${SERVER_MAP}
+      - SERVER_PASSWORD=${SERVER_PASSWORD}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - MAX_PLAYERS=${MAX_PLAYERS}
+      - UPDATE_ON_START=${UPDATE_ON_START}
+      - BACKUP_ON_START=${BACKUP_ON_START}
+      - WARN_ON_STOP=${WARN_ON_STOP}
+    ports:
+      # Port for connections from ARK game client
+      - "7778:7778/udp"
+      # RCON management port
+      - "27020:27020/tcp"
+      # Steam's server-list port
+      - "27015:27015/udp"
+    networks:
+      - default
