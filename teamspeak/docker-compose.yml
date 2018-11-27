@@ -13,6 +13,7 @@ volumes:
 services:
 
   database:
+    restart: always
     image: mariadb:10.3
     volumes:
       - teamspeak-db-data:/var/lib/mysql
@@ -23,6 +24,7 @@ services:
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
 
   application:
+    restart: always
     image: hermsi/alpine-teamspeak:3.5.0
     depends_on:
       - database
