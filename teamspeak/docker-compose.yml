@@ -13,7 +13,7 @@ volumes:
 services:
 
   database:
-    image: mariadb
+    image: mariadb:10.3
     volumes:
       - teamspeak-db-data:/var/lib/mysql
     environment:
@@ -23,7 +23,7 @@ services:
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
 
   application:
-    image: hermsi/alpine-teamspeak
+    image: hermsi/alpine-teamspeak:3.5.0
     depends_on:
       - database
     environment:
