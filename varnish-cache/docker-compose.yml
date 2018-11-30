@@ -3,7 +3,7 @@ version: '3'
 
 services:
   varnish:
-    image: nginx:alpine
+    image: hermsi/alpine-varnish:stable
     volumes:
       - ./varnish.vcl:${VARNISH_VCL_PATH}
     environment:
