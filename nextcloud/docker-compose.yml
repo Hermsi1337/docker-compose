@@ -42,7 +42,7 @@ services:
     command: --default-authentication-plugin=mysql_native_password --innodb_file_per_table
 
   application:
-    image: nextcloud:stable-apache
+    image: nextcloud:15.0-apache
     restart: unless-stopped
     environment:
       - UID=1000
