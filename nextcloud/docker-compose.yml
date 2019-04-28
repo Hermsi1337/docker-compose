@@ -30,7 +30,7 @@ services:
       - nextcloud-redis-data:/data
 
   database:
-    image: mysql:latest
+    image: mysql:8.0
     restart: unless-stopped
     volumes:
       - nextcloud-db-data:/var/lib/mysql
@@ -39,7 +39,7 @@ services:
       - MYSQL_DATABASE=${MYSQL_DATABASE}
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-    command: --default-authentication-plugin=mysql_native_password
+    command: --default-authentication-plugin=mysql_native_password --innodb_file_per_table
 
   application:
     image: nextcloud:stable-apache
