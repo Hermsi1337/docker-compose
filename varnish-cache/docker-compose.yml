@@ -1,0 +1,18 @@
+
+version: '3'
+
+services:
+  varnish:
+    image: hermsi/alpine-varnish:stable
+    volumes:
+      - ./varnish.vcl:${VARNISH_VCL_PATH}
+    environment:
+      - VARNISH_PORT=${VARNISH_PORT}
+      - VARNISH_RAM_STORAGE=${VARNISH_RAM_STORAGE}
+      - VARNISH_VCL_PATH=${VARNISH_VCL_PATH}
+      - VARNISHLOG=${VARNISHLOG}
+      - VIRTUAL_HOST=${VIRTUAL_HOST}
+      - VIRTUAL_PORT=${VARNISH_PORT}
+      - VIRTUAL_PROTO=http
+      - LETSENCRYPT_HOST=${LETSENCRYPT_HOST}
+      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
