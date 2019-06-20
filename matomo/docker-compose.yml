@@ -1,0 +1,62 @@
+version: '3'
+
+volumes:
+  redis-data:
+    driver: local-persist
+    driver_opts:
+      mountpoint: ${CONTAINERVOLUME}/var/lib/redis
+  db-data:
+    driver: local-persist
+    driver_opts:
+      mountpoint: ${CONTAINERVOLUME}/var/lib/mysql
+  matomo-config:
+    driver: local-persist
+    driver_opts:
+      mountpoint: ${CONTAINERVOLUME}/var/www/html/config
+  matomo-logs:
+    driver: local-persist
+    driver_opts:
+      mountpoint: ${CONTAINERVOLUME}/var/www/html/logs
+
+services:
+  redis:
+    image: redis:alpine
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+
+  database:
+    image: percona:5.7
+    restart: unless-stopped
+    volumes:
+      - db-data:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    command: --max_allowed_packet=128M
+
+  application:
+    image: matomo:3.9-apache
+    restart: unless-stopped
+    environment:
+      - VIRTUAL_HOST=${VIRTUAL_HOST}
+      - VIRTUAL_PROTO=http
+      - LETSENCRYPT_HOST=${LETSENCRYPT_HOST}
+      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
+    depends_on:
+      - database
+      - redis
+    volumes:
+      - matomo-config:/var/www/html/config
+      - matomo-logs:/var/www/html/logs
+      - ./conf.d/redis-session.ini:/usr/local/etc/php/redis-session.ini
+    networks:
+      - nginxproxy
+      - default
+
+networks:
+  nginxproxy:
+    external:
+      name: ${NGINXPROXYNETWORK}
