@@ -1,0 +1,53 @@
+version: '3'
+
+volumes:
+  gitea-data:
+     driver: local-persist
+     driver_opts:
+       mountpoint: ${CONTAINERVOLUME}/gitea
+  mysql-data:
+     driver: local-persist
+     driver_opts:
+       mountpoint: ${CONTAINERVOLUME}/mysql
+
+services:
+
+  web:
+    image: gitea/gitea
+    restart: unless-stopped
+    volumes:
+      - gitea-data:/data
+    ports:
+      - "${SSH_PORT}:22"
+    expose:
+      - 3000
+    environment: 
+      VIRTUAL_HOST: ${VIRTUAL_HOST}
+      VIRTUAL_PROTO: HTTP
+      VIRTUAL_PORT: 3000
+      LETSENCRYPT_HOST: ${LETSENCRYPT_HOST}
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
+    depends_on:
+      - database
+    networks:
+      - nginxproxy
+      - default
+
+  database:
+    image: percona:8.0
+    restart: unless-stopped
+    volumes:
+      - mysql-data:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    command: --default-authentication-plugin=mysql_native_password --innodb_file_per_table
+    networks:
+      - default
+
+networks:
+  nginxproxy:
+    external:
+      name: ${NGINXPROXYNETWORK}
