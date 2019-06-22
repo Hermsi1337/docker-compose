@@ -20,7 +20,7 @@ services:
     image: redis:alpine
     restart: unless-stopped
     volumes:
-      - nextcloud-redis-data:/data
+      - redis-data:/data
     networks:
       - default
 
