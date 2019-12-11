@@ -2,7 +2,7 @@ version: '2'
 
 services:
   nginx-proxy:
-    image: jwilder/nginx-proxy:alpine
+    image: jwilder/nginx-proxy:latest
     container_name: nginx-proxy
     environment:
       - ENABLE_IPV6=${ENABLE_IPV6}
