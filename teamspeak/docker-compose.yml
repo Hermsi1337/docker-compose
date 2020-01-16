@@ -37,6 +37,6 @@ services:
     volumes:
       - teamspeak-data:/teamspeak
     ports:
-      - 9987:9987/udp 
-      - 30033:30033 
-      - 10011:10011 
+      - ${PROXY_PORT_9987}:9987/udp 
+      - ${PROXY_PORT_30033}:30033 
+      - ${PROXY_PORT_10011}:10011 
