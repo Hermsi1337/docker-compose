@@ -25,17 +25,20 @@ services:
 
   application:
     restart: always
-    image: hermsi/alpine-teamspeak:3.5.0
+    image: teamspeak
     depends_on:
       - database
     environment:
-      - TS3_MARIADB_DB=${MYSQL_DATABASE}
-      - TS3_MARIADB_USER=${MYSQL_USER}
-      - TS3_MARIADB_PASS=${MYSQL_PASSWORD}
-      - TS3_MARIADB_HOST=database
-      - TS3_MARIADB_PORT=3306
+      TS3SERVER_DB_PLUGIN: ts3db_mariadb
+      TS3SERVER_DB_SQLCREATEPATH: create_mariadb
+      TS3SERVER_DB_HOST: database
+      TS3SERVER_DB_USER: ${MYSQL_USER}
+      TS3SERVER_DB_PASSWORD: ${MYSQL_PASSWORD}
+      TS3SERVER_DB_NAME: ${MYSQL_DATABASE}
+      TS3SERVER_DB_WAITUNTILREADY: 30
+      TS3SERVER_LICENSE: accept
     volumes:
-      - teamspeak-data:/teamspeak
+      - teamspeak-data:/var/ts3server/
     ports:
       - ${PROXY_PORT_9987}:9987/udp 
       - ${PROXY_PORT_30033}:30033 
