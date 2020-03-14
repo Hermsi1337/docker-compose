@@ -24,13 +24,13 @@ services:
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.rule=Host(`${TRAEFIK_HOSTNAME}`)"
       - "traefik.http.middlewares.traefik-auth.basicauth.users=${DASHBOARD_BASIC_AUTH}"
       - "traefik.http.middlewares.traefik-https-redirect.redirectscheme.scheme=https"
-      - "traefik.http.routers.traefik.middlewares=traefik-https-redirect"
-      - "traefik.http.routers.traefik-secure.entrypoints=https"
-      - "traefik.http.routers.traefik-secure.rule=Host(`${TRAEFIK_HOSTNAME}`)"
-      - "traefik.http.routers.traefik-secure.middlewares=traefik-auth,secured@file"
-      - "traefik.http.routers.traefik-secure.tls=true"
-      - "traefik.http.routers.traefik-secure.tls.certresolver=http"
-      - "traefik.http.routers.traefik-secure.service=api@internal"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.middlewares=traefik-https-redirect"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.entrypoints=https"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.rule=Host(`${TRAEFIK_HOSTNAME}`)"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.middlewares=traefik-auth,secured@file"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.tls=true"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.tls.certresolver=http"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.service=api@internal"
 
 networks:
   proxy:
