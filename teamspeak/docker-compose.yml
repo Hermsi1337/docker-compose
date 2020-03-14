@@ -14,7 +14,7 @@ services:
 
   database:
     restart: always
-    image: mariadb:10.3
+    image: mariadb:10.4
     volumes:
       - teamspeak-db-data:/var/lib/mysql
     environment:
@@ -40,6 +40,6 @@ services:
     volumes:
       - teamspeak-data:/var/ts3server/
     ports:
-      - ${PROXY_PORT_9987}:9987/udp 
-      - ${PROXY_PORT_30033}:30033 
-      - ${PROXY_PORT_10011}:10011 
+      - ${PROXY_PORT_9987}:9987/udp
+      - ${PROXY_PORT_30033}:30033
+      - ${PROXY_PORT_10011}:10011
