@@ -40,21 +40,29 @@ services:
         gitlab_rails['smtp_enable_starttls_auto'] = "${STARTTLS}"
         gitlab_rails['gitlab_shell_ssh_port'] = 22
       GITLAB_ROOT_PASSWORD: ${GITLAB_ROOT_PW}
-      VIRTUAL_HOST: ${VIRTUAL_HOST}
-      VIRTUAL_PROTO: HTTP
-      VIRTUAL_PORT: 80
-      LETSENCRYPT_HOST: ${LETSENCRYPT_HOST}
-      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.entrypoints=http"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.rule=Host(`${GITLAB_URL}`) || Host(`${GITLAB_REGISTRY}`)"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.middlewares=https-redirect@file"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.entrypoints=https"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.rule=Host(`${GITLAB_URL}`) || Host(`${GITLAB_REGISTRY}`)"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.middlewares=secured@file"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.tls=true"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.tls.certresolver=http"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.service=gitlab"
+      - "traefik.http.services.${COMPOSE_PROJECT_NAME}.loadbalancer.server.port=80"
+      - "traefik.docker.network=${PROXY_NETWORK}"
     volumes:
       - gitlab-data:/etc/gitlab
       - gitlab-config:/var/log/gitlab
       - gitlab-logs:/var/opt/gitlab
     networks:
-      - nginxproxy
+      - proxy
     ports:
-      - ${PROXYPORTSSH}:22
+      - ${PROXY_PORT_SSH}:22
 
 networks:
-  nginxproxy:
+  proxy:
     external:
-      name: ${NGINXPROXYNETWORK}
+      name: ${PROXY_NETWORK}

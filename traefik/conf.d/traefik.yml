@@ -1,0 +1,29 @@
+api:
+  dashboard: true
+  debug: true
+
+entryPoints:
+  http:
+    address: ":80"
+  https:
+    address: ":443"
+
+accessLog: {}
+
+log:
+  level: DEBUG
+
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false
+  file:
+    filename: /config.yml
+
+certificatesResolvers:
+  http:
+    acme:
+      email: email@example.com
+      storage: acme.json
+      httpChallenge:
+        entryPoint: http

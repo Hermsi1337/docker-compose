@@ -5,10 +5,10 @@ volumes:
      driver: local-persist
      driver_opts:
        mountpoint: ${CONTAINERVOLUME}/var/lib/redis
-  nextcloud-db-data:
+  nextcloud-postgres-data:
      driver: local-persist
      driver_opts:
-       mountpoint: ${CONTAINERVOLUME}/var/lib/mysql
+       mountpoint: ${CONTAINERVOLUME}/var/lib/postgresql
   nextcloud-data:
      driver: local-persist
      driver_opts:
@@ -30,16 +30,15 @@ services:
       - nextcloud-redis-data:/data
 
   database:
-    image: mysql:8.0
+    image: postgres:12.2
     restart: unless-stopped
     volumes:
-      - nextcloud-db-data:/var/lib/mysql
+      - nextcloud-postgres-data:/var/lib/postgresql/data
     environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-    command: --default-authentication-plugin=mysql_native_password --innodb_file_per_table
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+      - POSTGRES_USER=${DATABASE_USER}
+      - POSTGRES_DB=${DATABASE_NAME}
+    command: ${DATABASE_COMMAND}
 
   application:
     image: nextcloud:stable-apache
@@ -53,15 +52,11 @@ services:
       - REDIS_MAX_MEMORY=64mb
       - CRON_PERIOD=15m
       - TZ=Europe/Berlin
-      - DB_TYPE=mysql
-      - DB_NAME=${MYSQL_DATABASE}
-      - DB_USER=${MYSQL_USER}
-      - DB_PASSWORD=${MYSQL_PASSWORD}
+      - DB_TYPE=pgsql
+      - DB_NAME=${DATABASE_NAME}
+      - DB_USER=${DATABASE_USER}
+      - DB_PASSWORD=${DATABASE_PASSWORD}
       - DB_HOST=database
-      - VIRTUAL_HOST=${VIRTUAL_HOST}
-      - VIRTUAL_PROTO=http
-      - LETSENCRYPT_HOST=${LETSENCRYPT_HOST}
-      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
     depends_on:
       - database
       - redis
@@ -70,11 +65,24 @@ services:
       - nextcloud-config:/var/www/html/config
       - nextcloud-apps:/var/www/html/custom_apps
       - ./conf.d/redis-session.ini:/usr/local/etc/php/conf.d/redis-session.ini
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.entrypoints=http"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.rule=Host(`${VIRTUAL_HOST}`)"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.middlewares=https-redirect@file"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.entrypoints=https"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.rule=Host(`${VIRTUAL_HOST}`)"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.middlewares=secured@file"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.tls=true"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.tls.certresolver=http"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.service=${COMPOSE_PROJECT_NAME}"
+      - "traefik.http.services.${COMPOSE_PROJECT_NAME}.loadbalancer.server.port=80"
+      - "traefik.docker.network=${PROXY_NETWORK}"
     networks:
-      - nginxproxy
+      - proxy
       - default
 
 networks:
-  nginxproxy:
+  proxy:
     external:
-      name: ${NGINXPROXYNETWORK}
+      name: ${PROXY_NETWORK}
