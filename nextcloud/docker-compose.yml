@@ -68,10 +68,10 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.entrypoints=http"
-      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.rule=Host(`${VIRTUAL_HOST}`)"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.rule=Host(`${NEXTCLOUD_HOST}`)"
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.middlewares=https-redirect@file"
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.entrypoints=https"
-      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.rule=Host(`${VIRTUAL_HOST}`)"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.rule=Host(`${NEXTCLOUD_HOST}`)"
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.middlewares=secured@file"
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.tls=true"
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.tls.certresolver=http"
