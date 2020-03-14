@@ -6,6 +6,9 @@ http:
 
     default-headers:
       headers:
+        customResponseHeaders:
+          server: "" # unset header
+          X-Powered-By: "" # unset header
         frameDeny: true
         sslRedirect: true
         browserXssFilter: true
