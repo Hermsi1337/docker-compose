@@ -30,7 +30,7 @@ services:
       - nextcloud-redis-data:/data
 
   database:
-    image: postgres:12.2
+    image: postgres:${POSTGRESQL_VERSION}
     restart: unless-stopped
     volumes:
       - nextcloud-postgres-data:/var/lib/postgresql/data
