@@ -7,4 +7,4 @@ I hope they're time-saving for you guys.
 
 In case these files did actually save you some time, you may consider buying me a coffee:
 
-[![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://paypal.me/Hermsi)
+[![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.me/Hermsi)
