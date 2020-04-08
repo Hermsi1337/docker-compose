@@ -9,13 +9,20 @@ http:
         customResponseHeaders:
           server: "" # unset header
           X-Powered-By: "" # unset header
-        frameDeny: true
+        customFrameOptionsValue: SAMEORIGIN
         sslRedirect: true
         browserXssFilter: true
         contentTypeNosniff: true
         forceSTSHeader: true
         stsIncludeSubdomains: true
         stsPreload: true
+        stsSeconds: 15552000
+        accessControlAllowMethods:
+          - GET
+          - OPTIONS
+          - PUT
+        accessControlMaxAge: 100
+        addVaryHeader: true
 
     secured:
       chain:
