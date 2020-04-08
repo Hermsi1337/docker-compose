@@ -67,12 +67,15 @@ services:
       - ./conf.d/redis-session.ini:/usr/local/etc/php/conf.d/redis-session.ini
     labels:
       - "traefik.enable=true"
+      - "traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-caldav.redirectregex.permanent=true"
+      - "traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-caldav.redirectregex.regex=^https://(.*)/.well-known/(card|cal)dav"
+      - "traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-caldav.redirectregex.replacement=https://$${1}/remote.php/dav/"
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.entrypoints=http"
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.rule=Host(`${NEXTCLOUD_HOST}`)"
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.middlewares=https-redirect@file"
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.entrypoints=https"
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.rule=Host(`${NEXTCLOUD_HOST}`)"
-      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.middlewares=secured@file"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.middlewares=secured@file,${COMPOSE_PROJECT_NAME}-caldav@docker"
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.tls=true"
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.tls.certresolver=http"
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.service=${COMPOSE_PROJECT_NAME}"
