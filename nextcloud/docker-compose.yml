@@ -71,6 +71,7 @@ services:
   cronjob:
     image: nextcloud:stable-apache
     restart: unless-stopped
+    user: "33:0"
     environment:
       - DB_NAME=${DATABASE_NAME}
       - DB_USER=${DATABASE_USER}
@@ -85,7 +86,7 @@ services:
     volumes:
       - nextcloud-data:/var/www/html
       - ./conf.d/nextcloud.ini:/usr/local/etc/php/conf.d/nextcloud.ini
-    entrypoint: sh
+    entrypoint: su
     command: -c "echo 'cronjob is executed every ${CRON_INTERVAL}' && while sleep ${CRON_INTERVAL} ; do echo 'executing cron.php ...' && php cron.php && echo '... done'; done"
 
 
