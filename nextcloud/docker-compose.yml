@@ -12,15 +12,7 @@ volumes:
   nextcloud-data:
      driver: local-persist
      driver_opts:
-       mountpoint: ${CONTAINERVOLUME}/var/www/html/data
-  nextcloud-config:
-     driver: local-persist
-     driver_opts:
-       mountpoint: ${CONTAINERVOLUME}/var/www/html/config
-  nextcloud-apps:
-     driver: local-persist
-     driver_opts:
-       mountpoint: ${CONTAINERVOLUME}/var/www/html/custom_apps
+       mountpoint: ${CONTAINERVOLUME}/var/www/html
 
 services:
   redis:
@@ -44,26 +36,17 @@ services:
     image: nextcloud:stable-apache
     restart: unless-stopped
     environment:
-      - UID=1000
-      - GID=1000
-      - UPLOAD_MAX_SIZE=10G
-      - APC_SHM_SIZE=128M
-      - OPCACHE_MEM_SIZE=128
-      - REDIS_MAX_MEMORY=64mb
-      - CRON_PERIOD=15m
-      - TZ=Europe/Berlin
-      - DB_TYPE=pgsql
       - DB_NAME=${DATABASE_NAME}
       - DB_USER=${DATABASE_USER}
       - DB_PASSWORD=${DATABASE_PASSWORD}
+      - DB_TYPE=pgsql
       - DB_HOST=database
+      - REDIS_HOST=redis
     depends_on:
       - database
       - redis
     volumes:
-      - nextcloud-data:/var/www/html/data
-      - nextcloud-config:/var/www/html/config
-      - nextcloud-apps:/var/www/html/custom_apps
+      - nextcloud-data:/var/www/html
       - ./conf.d/nextcloud.ini:/usr/local/etc/php/conf.d/nextcloud.ini
     labels:
       - "traefik.enable=true"
@@ -84,6 +67,27 @@ services:
     networks:
       - proxy
       - default
+
+  cronjob:
+    image: nextcloud:stable-apache
+    restart: unless-stopped
+    environment:
+      - DB_NAME=${DATABASE_NAME}
+      - DB_USER=${DATABASE_USER}
+      - DB_PASSWORD=${DATABASE_PASSWORD}
+      - DB_TYPE=pgsql
+      - DB_HOST=database
+      - REDIS_HOST=redis
+    depends_on:
+      - application
+      - database
+      - redis
+    volumes:
+      - nextcloud-data:/var/www/html
+      - ./conf.d/nextcloud.ini:/usr/local/etc/php/conf.d/nextcloud.ini
+    entrypoint: sh
+    command: -c "echo 'cronjob is executed every ${CRON_INTERVAL}' && while sleep ${CRON_INTERVAL} ; do cd /var/ww/html && echo 'executing /var/ww/html/cron.php ...' && php cron.php && echo '... done'; done"
+
 
 networks:
   proxy:
