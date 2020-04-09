@@ -87,7 +87,7 @@ services:
       - nextcloud-data:/var/www/html
       - ./conf.d/nextcloud.ini:/usr/local/etc/php/conf.d/nextcloud.ini
     entrypoint: su
-    command: -c "echo 'cronjob is executed every ${CRON_INTERVAL}' && while sleep ${CRON_INTERVAL} ; do echo 'executing cron.php ...' && php cron.php && echo '... done'; done"
+    command: -c "echo 'cronjob is executed every ${CRON_INTERVAL}' && while sleep ${CRON_INTERVAL} ; do echo 'executing cron.php ...' && php cron.php && echo '... executed cron.php'; done"
 
 
 networks:
