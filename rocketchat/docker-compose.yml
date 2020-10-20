@@ -1,0 +1,67 @@
+version: '3'
+
+services:
+  rocketchat:
+    image: rocketchat/rocket.chat:${ROCKETCHAT_WEB_VERSION}
+    command: >
+      bash -c
+        "for i in `seq 1 30`; do
+          node main.js &&
+          s=$$? && break || s=$$?;
+          echo \"Tried $$i times. Waiting 5 secs...\";
+          sleep 5;
+        done; (exit $$s)"
+    restart: unless-stopped
+    volumes:
+      - ${CONTAINERVOLUME}/rocketchat/uploads:/app/uploads
+    environment:
+      PORT: ${ROCKETCHAT_WEB_PORT}
+      ROOT_URL: https://${ROCKETCHAT_WEB_DOMAIN}
+      MONGO_URL: 'mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@mongo:27017/${MONGODB_DATABASE}?authSource=${MONGODB_DATABASE}&replicaSet=rs0'
+      MONGO_OPLOG_URL: 'mongodb://${MONGODB_OPLOG_USER}:${MONGODB_OPLOG_PASSWORD}@mongo:27017/local?authSource=admin&replicaSet=rs0'
+      USE_NATIVE_OPLOG: 'true'
+      MAIL_URL: '${ROCKETCHAT_WEB_SMTP_PROTOCOL}://${ROCKETCHAT_WEB_SMTP_USER}:${ROCKETCHAT_WEB_SMTP_PASSWORD}@${ROCKETCHAT_WEB_SMTP_SERVER}:${ROCKETCHAT_WEB_SMTP_PORT}'
+    depends_on:
+      - mongo
+    expose:
+      - ${ROCKETCHAT_WEB_PORT}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.entrypoints=http"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.rule=Host(`${ROCKETCHAT_WEB_DOMAIN}`)"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.middlewares=https-redirect@file"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.entrypoints=https"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.rule=Host(`${ROCKETCHAT_WEB_DOMAIN}`)"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.middlewares=secured@file"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.tls=true"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.tls.certresolver=http"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.service=${COMPOSE_PROJECT_NAME}"
+      - "traefik.http.services.${COMPOSE_PROJECT_NAME}.loadbalancer.server.port=${ROCKETCHAT_WEB_PORT}"
+      - "traefik.docker.network=${PROXY_NETWORK}"
+    networks:
+      - proxy
+      - default
+
+  mongo:
+    image: bitnami/mongodb:4.4
+    restart: unless-stopped
+    environment:
+      MONGODB_USERNAME: '${MONGODB_USERNAME}'
+      MONGODB_PASSWORD: '${MONGODB_PASSWORD}'
+      MONGODB_DATABASE: '${MONGODB_DATABASE}'
+      MONGODB_OPLOG_USER: '${MONGODB_OPLOG_USER}'
+      MONGODB_OPLOG_PASSWORD: '${MONGODB_OPLOG_PASSWORD}'
+      MONGODB_ADVERTISED_HOSTNAME: mongo
+      MONGODB_REPLICA_SET_MODE: primary
+      MONGODB_REPLICA_SET_NAME: rs0
+      MONGODB_INITIAL_PRIMARY_HOST: 'true'
+      MONGODB_REPLICA_SET_KEY: '${MONGODB_REPLICA_SET_KEY}'
+      MONGODB_ROOT_PASSWORD: '${MONGODB_ROOT_PASSWORD}'
+    volumes:
+      - ${CONTAINERVOLUME}/mongodb:/bitnami/mongodb
+      - ./init.d/oplog_user.sh:/docker-entrypoint-initdb.d/oplog_user.sh:ro
+
+networks:
+  proxy:
+    external:
+      name: ${PROXY_NETWORK}

@@ -1,0 +1,19 @@
+version: '3'
+
+services:  # hubot, the popular chatbot (add the bot user first and change the password before starting this image)
+  hubot:
+    image: rocketchat/hubot-rocketchat:latest
+    restart: unless-stopped
+    environment:
+      ROCKETCHAT_URL: rocketchat:${ROCKETCHAT_WEB_PORT}
+      ROCKETCHAT_ROOM: ${ROCKETCHAT_BOT_ROOM}
+      ROCKETCHAT_USER: ${ROCKETCHAT_BOT_USER}
+      ROCKETCHAT_PASSWORD: '${ROCKETCHAT_BOT_PASSWORD}'
+      BOT_NAME: ${ROCKETCHAT_BOT_NAME}
+      EXTERNAL_SCRIPTS: '${ROCKETCHAT_BOT_EXTERNAL_SCRIPTS}'
+    depends_on:
+      - rocketchat
+    volumes:
+      - ${CONTAINERVOLUME}/hubot/scripts:/home/hubot/scripts
+    ports:
+      - ${ROCKETCHAT_BOT_PORT}:8080
