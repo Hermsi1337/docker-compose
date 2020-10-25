@@ -27,7 +27,7 @@ services:
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.middlewares=traefik-https-redirect"
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.entrypoints=https"
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.rule=Host(`${TRAEFIK_HOSTNAME}`)"
-      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.middlewares=traefik-auth,secured@file"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.middlewares=${COMPOSE_PROJECT_NAME}-auth,secured@file"
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.tls=true"
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.tls.certresolver=http"
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.service=api@internal"
