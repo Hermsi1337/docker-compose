@@ -1,21 +1,6 @@
 version: '3'
 
-volumes:
-  gitlab-data:
-     driver: local-persist
-     driver_opts:
-       mountpoint: ${CONTAINERVOLUME}/var/opt/gitlab
-  gitlab-config:
-     driver: local-persist
-     driver_opts:
-       mountpoint: ${CONTAINERVOLUME}/etc/gitlab
-  gitlab-logs:
-     driver: local-persist
-     driver_opts:
-       mountpoint: ${CONTAINERVOLUME}/var/log/gitlab
-
 services:
-
   gitlab:
     image: gitlab/gitlab-ce:latest
     environment:
@@ -54,9 +39,9 @@ services:
       - "traefik.http.services.${COMPOSE_PROJECT_NAME}.loadbalancer.server.port=80"
       - "traefik.docker.network=${PROXY_NETWORK}"
     volumes:
-      - gitlab-data:/etc/gitlab
-      - gitlab-config:/var/log/gitlab
-      - gitlab-logs:/var/opt/gitlab
+      - ${CONTAINERVOLUME}/config:/etc/gitlab
+      - ${CONTAINERVOLUME}/log:/var/log/gitlab
+      - ${CONTAINERVOLUME}/data:/var/opt/gitlab
     networks:
       - proxy
     ports:
