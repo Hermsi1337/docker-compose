@@ -5,8 +5,8 @@ services:
     image: gitlab/gitlab-ce:latest
     environment:
       GITLAB_OMNIBUS_CONFIG: |
-        external_url 'https://${GITLAB_URL}'
-        registry_external_url 'https://${GITLAB_REGISTRY}'
+        external_url 'https://${GITLAB_DOMAIN}'
+        registry_external_url 'https://${GITLAB_REGISTRY_DOMAIN}'
         registry_nginx['listen_port'] = 80
         registry_nginx['listen_https'] = false
         registry_nginx['proxy_set_headers'] = { "X-Forwarded-Proto" => "https", "X-Forwarded-Ssl" => "on" }
@@ -28,10 +28,10 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.entrypoints=http"
-      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.rule=Host(`${GITLAB_URL}`) || Host(`${GITLAB_REGISTRY}`)"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.rule=Host(`${GITLAB_DOMAIN}`) || Host(`${GITLAB_REGISTRY_DOMAIN}`)"
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.middlewares=https-redirect@file"
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.entrypoints=https"
-      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.rule=Host(`${GITLAB_URL}`) || Host(`${GITLAB_REGISTRY}`)"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.rule=Host(`${GITLAB_DOMAIN}`) || Host(`${GITLAB_REGISTRY_DOMAIN}`)"
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.middlewares=secured@file"
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.tls=true"
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.tls.certresolver=http"
