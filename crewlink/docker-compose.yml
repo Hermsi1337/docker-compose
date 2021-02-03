@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+  server:
+    image: ottomated/crewlink-server:latest
+    environment:
+      PORT: "${PORT}"
+      ADDRESS: "https://${CREWLINK_DOMAIN}"
+      NAME: "${NAME}"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.entrypoints=http"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.rule=Host(`${CREWLINK_DOMAIN}`)"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.middlewares=https-redirect@file"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.entrypoints=https"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.rule=Host(`${CREWLINK_DOMAIN}`)"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.middlewares=secured@file"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.tls=true"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.tls.certresolver=http"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.service=${COMPOSE_PROJECT_NAME}"
+      - "traefik.http.services.${COMPOSE_PROJECT_NAME}.loadbalancer.server.port=${PORT}"
+      - "traefik.docker.network=${PROXY_NETWORK}"
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external:
+      name: ${PROXY_NETWORK}
