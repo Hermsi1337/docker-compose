@@ -1,0 +1,98 @@
+version: '3.6'
+
+services:
+  zammad-elasticsearch:
+    environment:
+      - discovery.type=single-node
+    image: ${IMAGE_REPO}:zammad-elasticsearch${VERSION}
+    restart: ${RESTART}
+    volumes:
+      - ${CONTAINER_VOLUME}/elasticsearch:/usr/share/elasticsearch/data
+
+  zammad-init:
+    command: ["zammad-init"]
+    depends_on:
+      - zammad-postgresql
+    environment:
+      - POSTGRESQL_USER=${POSTGRES_USER}
+      - POSTGRESQL_PASS=${POSTGRES_PASS}
+    image: ${IMAGE_REPO}:zammad${VERSION}
+    restart: on-failure
+    volumes:
+      - ${CONTAINER_VOLUME}/zammad:/opt/zammad
+
+  zammad-memcached:
+    command: memcached -m 256M
+    image: memcached:1.6.9-alpine
+    restart: ${RESTART}
+
+  zammad-nginx:
+    command: ["zammad-nginx"]
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.entrypoints=http"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.rule=Host(`${ZAMMAD_DOMAIN}`)"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.middlewares=https-redirect@file"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.entrypoints=https"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.rule=Host(`${ZAMMAD_DOMAIN}`)"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.middlewares=secured@file"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.tls=true"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.tls.certresolver=http"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.service=${COMPOSE_PROJECT_NAME}"
+      - "traefik.http.services.${COMPOSE_PROJECT_NAME}.loadbalancer.server.port=8080"
+      - "traefik.docker.network=${PROXY_NETWORK}"
+    expose:
+      - "8080"
+    depends_on:
+      - zammad-railsserver
+    image: ${IMAGE_REPO}:zammad${VERSION}
+    restart: ${RESTART}
+    volumes:
+      - ${CONTAINER_VOLUME}/zammad:/opt/zammad
+    networks:
+      - proxy
+      - default
+
+  zammad-postgresql:
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASS}
+    image: ${IMAGE_REPO}:zammad-postgresql${VERSION}
+    restart: ${RESTART}
+    volumes:
+      - ${CONTAINER_VOLUME}/postgresql:/var/lib/postgresql/data
+
+  zammad-railsserver:
+    command: ["zammad-railsserver"]
+    depends_on:
+      - zammad-memcached
+      - zammad-postgresql
+    image: ${IMAGE_REPO}:zammad${VERSION}
+    restart: ${RESTART}
+    volumes:
+      - ${CONTAINER_VOLUME}/zammad:/opt/zammad
+
+  zammad-scheduler:
+    command: ["zammad-scheduler"]
+    depends_on:
+      - zammad-memcached
+      - zammad-railsserver
+    image: ${IMAGE_REPO}:zammad${VERSION}
+    restart: ${RESTART}
+    volumes:
+      - ${CONTAINER_VOLUME}/zammad:/opt/zammad
+
+  zammad-websocket:
+    command: ["zammad-websocket"]
+    depends_on:
+      - zammad-memcached
+      - zammad-railsserver
+    image: ${IMAGE_REPO}:zammad${VERSION}
+    restart: ${RESTART}
+    volumes:
+      - ${CONTAINER_VOLUME}/zammad:/opt/zammad
+
+networks:
+  proxy:
+    external:
+      name: ${PROXY_NETWORK}
